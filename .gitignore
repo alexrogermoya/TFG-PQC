@@ -4,3 +4,11 @@ nginx-*/
 *.pcap
 server.crt
 server.key
+certs/*.crt
+certs/*.key
+results/
+captures/
+__pycache__/
+.DS_Store
+venv/
+certs/

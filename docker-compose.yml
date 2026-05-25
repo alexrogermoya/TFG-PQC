@@ -1,0 +1,112 @@
+name: tfg-pqc-tls
+
+services:
+  server-classic:
+    image: openquantumsafe/oqs-ossl3:latest
+    command:
+      - sh
+      - -lc
+      - >
+        /opt/openssl/bin/openssl s_server
+        -accept 443
+        -cert /certs/server.crt
+        -key /certs/server.key
+        -www
+        -tls1_3
+        -no_ticket
+        -groups X25519
+    volumes:
+      - ./certs:/certs:ro
+    networks:
+      pqcnet:
+        aliases:
+          - classic.tfg-pqc.local
+
+  server-hybrid:
+    image: openquantumsafe/oqs-ossl3:latest
+    command:
+      - sh
+      - -lc
+      - >
+        /opt/openssl/bin/openssl s_server
+        -accept 443
+        -cert /certs/server.crt
+        -key /certs/server.key
+        -www
+        -tls1_3
+        -no_ticket
+        -groups X25519MLKEM768
+    volumes:
+      - ./certs:/certs:ro
+    networks:
+      pqcnet:
+        aliases:
+          - hybrid.tfg-pqc.local
+
+  server-pq:
+    image: openquantumsafe/oqs-ossl3:latest
+    command:
+      - sh
+      - -lc
+      - >
+        /opt/openssl/bin/openssl s_server
+        -accept 443
+        -cert /certs/server.crt
+        -key /certs/server.key
+        -www
+        -tls1_3
+        -no_ticket
+        -groups MLKEM768
+    volumes:
+      - ./certs:/certs:ro
+    networks:
+      pqcnet:
+        aliases:
+          - pq.tfg-pqc.local
+
+  bench:
+    image: openquantumsafe/oqs-ossl3:latest
+    command: ["sleep", "infinity"]
+    depends_on:
+      - server-classic
+      - server-hybrid
+      - server-pq
+    volumes:
+      - ./certs:/certs
+      - ./configs/openssl:/openssl-config:ro
+    networks:
+      - pqcnet
+
+  capture-classic:
+    image: nicolaka/netshoot:latest
+    profiles: ["capture"]
+    depends_on:
+      - server-classic
+    network_mode: "service:server-classic"
+    command: ["tcpdump", "-i", "any", "-s", "0", "-w", "/captures/classic.pcap", "tcp", "port", "443"]
+    volumes:
+      - ./captures:/captures
+
+  capture-hybrid:
+    image: nicolaka/netshoot:latest
+    profiles: ["capture"]
+    depends_on:
+      - server-hybrid
+    network_mode: "service:server-hybrid"
+    command: ["tcpdump", "-i", "any", "-s", "0", "-w", "/captures/hybrid.pcap", "tcp", "port", "443"]
+    volumes:
+      - ./captures:/captures
+
+  capture-pq:
+    image: nicolaka/netshoot:latest
+    profiles: ["capture"]
+    depends_on:
+      - server-pq
+    network_mode: "service:server-pq"
+    command: ["tcpdump", "-i", "any", "-s", "0", "-w", "/captures/pq.pcap", "tcp", "port", "443"]
+    volumes:
+      - ./captures:/captures
+
+networks:
+  pqcnet:
+    driver: bridge

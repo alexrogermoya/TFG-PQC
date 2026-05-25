@@ -1,0 +1,48 @@
+services:
+  nginx-classic:
+    image: openquantumsafe/nginx:latest
+    command: ["nginx", "-g", "daemon off;"]
+    depends_on:
+      - app-backend
+    volumes:
+      - ./certs:/certs:ro
+      - ./configs/nginx/classic.conf:/opt/nginx/conf/nginx.conf:ro
+    ports:
+      - "8441:443"
+    networks:
+      - pqcnet
+
+  nginx-hybrid:
+    image: openquantumsafe/nginx:latest
+    command: ["nginx", "-g", "daemon off;"]
+    depends_on:
+      - app-backend
+    volumes:
+      - ./certs:/certs:ro
+      - ./configs/nginx/hybrid.conf:/opt/nginx/conf/nginx.conf:ro
+    ports:
+      - "8442:443"
+    networks:
+      - pqcnet
+
+  # nginx-pq:
+  #   image: openquantumsafe/nginx:latest
+  #   profiles: ["unsupported-pq"]
+  #   command: ["nginx", "-g", "daemon off;"]
+  #   depends_on:
+  #     - app-backend
+  #   volumes:
+  #     - ./certs:/certs:ro
+  #     - ./configs/nginx/pq.conf:/opt/nginx/conf/nginx.conf:ro
+  #   ports:
+  #     - "8443:443"
+  #   networks:
+  #     - pqcnet
+
+  app-backend:
+    image: nginx:alpine
+    volumes:
+      - ./configs/backend/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./www:/usr/share/nginx/html:ro
+    networks:
+      - pqcnet
