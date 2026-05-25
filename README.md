@@ -1,67 +1,104 @@
-# TLS migration to PQC hybrid standards
+# Transicio a TLS post-quantic hibrid
 
-## 1. First time environment setup:
+Entorn Docker per demostrar i mesurar una migracio TLS 1.3 des d'un key
+exchange classic cap a una estructura hibrida post-quantica.
 
-````
-docker build -t pqc-env . 
-docker run -it -v $(pwd):/opt/pqc_workspace --name pqc-lab pqc-env
-````
+## Que es construeix
 
-#### With container running:
+La demo aixeca tres servidors TLS comparables:
 
-- Clone and compile liboqs and OpenSSL
+- `classic`: TLS 1.3 amb `X25519`.
+- `hybrid`: TLS 1.3 amb `X25519MLKEM768`.
+- `pq`: TLS 1.3 amb `MLKEM768`.
 
-````
-./scripts/init_setup.sh
-````
+Tots tres fan servir la imatge `openquantumsafe/oqs-ossl3`, basada en OpenSSL 3
+amb liboqs i `oqsprovider`, i comparteixen el mateix certificat RSA autosignat.
+Aixi l'experiment aïlla l'efecte del grup de key exchange.
 
-- Check OQS provider is active, and get KEM-algorithms in OpenSSL:
+També hi ha un segon entorn, mes representatiu, amb nginx com a reverse proxy
+TLS davant d'una aplicacio HTTP interna. Aquest entorn compara `X25519` contra
+`X25519MLKEM768`. El cas `MLKEM768` pur es conserva al laboratori amb
+`openssl s_server`, perque la imatge nginx/OQS provada no accepta `MLKEM768`
+pur amb la directiva `ssl_ecdh_curve`.
 
-````
-openssl list -providers -provider default -provider oqsprovider
-openssl list -kem-algorithms -provider oqsprovider
-`````
-- Copy custom OpenSSL configuration file inside container to configure `oqsprovider`
-````
-cp /etc/ssl/openssl.cnf config/openssl_pqc.cnf
-````
-<br>
+## Posada en marxa
 
-## 2. Connection
-
-- Create RSA key and certificate:
-
-
-````
-openssl req -x509 -newkey rsa:2048 -keyout server.key -out server.crt -days 365 -nodes -subj "/CN=TFG-PQC"
-````
-
-- Start server (OpenSSl s_server, not definitive):
-
-````
-openssl s_server -cert server.crt -key server.key -accept 4433 -www -tls1_3 -groups X25519MLKEM768
-````
-
-- Open two more terminals for the client and packet capture, and start a container on each one:
-
-````
-docker exec -it pqc-lab bash
-````
-On one terminal run:
-````
-tcpdump -i lo port 4433 -w captura_tfg.pcap
-````
-On the other create a connection with the server using hybrid encryption X25519MLKEM768 (We add the flag `-trace` for better handshake tracking)
+```sh
+./scripts/generate-certs.sh
+docker compose -f docker-compose.yml -f docker-compose.nginx.yml up -d
+python3 scripts/benchmark.py --samples 5 --duration 10 --warmup 2
 ```
-openssl s_client -connect localhost:4433 -tls1_3 -groups X25519MLKEM768 -trace
-````
-<br>
-Stop the container:
 
-````
-exit
-`````
-Restart container:
-````
-docker start -ai pqc-lab
-````
+Per executar nomes l'entorn nginx:
+
+```sh
+python3 scripts/benchmark.py --environment nginx --samples 5 --duration 10 --warmup 2
+```
+
+Per executar nomes el laboratori aïllat:
+
+```sh
+python3 scripts/benchmark.py --environment lab --samples 5 --duration 10 --warmup 2
+```
+
+Els CSV es generen a `results/`:
+
+- `handshake_samples.csv`: una fila per lot de mesura `s_time`.
+- `handshake_summary.csv`: estadistics agregats de latencia del handshake.
+- `handshake_message_sizes.csv`: overhead dels missatges de handshake.
+- `handshake_*_all.csv`, `handshake_*_lab.csv` o `handshake_*_nginx.csv`: copia amb sufix segons l'entorn executat.
+
+## Verificacio manual
+
+```sh
+docker compose exec bench /opt/openssl/bin/openssl s_client \
+  -connect server-hybrid:443 \
+  -servername server-hybrid \
+  -tls1_3 \
+  -groups X25519MLKEM768 \
+  -CAfile /certs/server.crt \
+  -brief
+```
+
+La sortida hauria d'indicar `Negotiated TLS1.3 group: X25519MLKEM768`.
+
+Per verificar nginx:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.nginx.yml exec bench \
+  /opt/openssl/bin/openssl s_client \
+  -connect nginx-hybrid:443 \
+  -servername nginx-hybrid \
+  -tls1_3 \
+  -groups X25519MLKEM768 \
+  -CAfile /certs/server.crt \
+  -brief
+```
+
+## Captures pcap opcionals
+
+```sh
+docker compose --profile capture up -d
+python3 scripts/benchmark.py --samples 2 --duration 5 --warmup 1
+docker compose --profile capture stop
+```
+
+Els `.pcap` queden a `captures/` i es poden obrir amb Wireshark.
+
+## Simulacio WAN
+
+Per estudiar un escenari distribuït amb RTT, jitter i perdua controlats:
+
+```sh
+./scripts/wan-netem.sh apply --rtt-ms 40 --jitter-ms 5 --loss 0.1 --environment all
+python3 scripts/benchmark.py --samples 5 --duration 10 --warmup 2
+./scripts/wan-netem.sh clear --environment all
+```
+
+El detall esta documentat a `docs/wan-simulation.md`.
+
+## Metodologia
+
+La metodologia completa esta descrita a `docs/methodology.md`. El detall del
+benchmark esta a `docs/benchmark.md` i el detall de la implementacio a
+`docs/implementation.md`. La simulacio WAN esta a `docs/wan-simulation.md`.
