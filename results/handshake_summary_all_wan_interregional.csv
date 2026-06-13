@@ -1,0 +1,4 @@
+network,environment,scenario,configured_group,negotiated_group,batches,total_connections,total_real_seconds,overall_mean_handshake_ms,mean_of_batch_means_ms,median_batch_mean_ms,stdev_batch_mean_ms,p95_batch_mean_ms,p99_batch_mean_ms,min_batch_mean_ms,max_batch_mean_ms,overall_handshakes_per_second
+wan,nginx,classic,X25519,X25519,5,377,105.000000,278.514589,279.235634,276.315789,16.124609,304.347826,304.347826,262.500000,304.347826,3.590476
+wan,nginx,hybrid,X25519MLKEM768,X25519MLKEM768,5,389,105.000000,269.922879,270.284881,272.727273,11.027714,283.783784,283.783784,256.097561,283.783784,3.704762
+wan,nginx,pq,mlkem768,MLKEM768,5,383,105.000000,274.151436,274.457869,276.315789,10.191779,287.671233,287.671233,259.259259,287.671233,3.647619

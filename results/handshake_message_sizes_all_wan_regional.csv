@@ -1,0 +1,4 @@
+network,environment,scenario,configured_group,negotiated_group,client_to_server_bytes,server_to_client_bytes,total_handshake_message_bytes,message_breakdown_json
+wan,nginx,classic,X25519,X25519,380,1379,1759,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 328, ""EncryptedExtensions"": 10, ""Finished"": 104, ""ServerHello"": 122}"
+wan,nginx,hybrid,X25519MLKEM768,X25519MLKEM768,1557,2467,4024,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 1505, ""EncryptedExtensions"": 10, ""Finished"": 104, ""ServerHello"": 1210}"
+wan,nginx,pq,mlkem768,MLKEM768,1521,2435,3956,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 1469, ""EncryptedExtensions"": 10, ""Finished"": 104, ""ServerHello"": 1178}"
