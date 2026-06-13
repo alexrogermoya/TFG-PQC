@@ -78,7 +78,7 @@ docker compose -f docker-compose.yml -f docker-compose.nginx.yml exec bench \
 ## Captures pcap opcionals
 
 ```sh
-docker compose --profile capture up -d
+docker compose -f docker-compose.yml -f docker-compose.nginx.yml --profile capture up -d
 python3 scripts/benchmark.py --samples 2 --duration 5 --warmup 1
 docker compose --profile capture stop
 ```

@@ -24,20 +24,49 @@ services:
       - "8442:443"
     networks:
       - pqcnet
+  
+  nginx-pq:
+    image: openquantumsafe/nginx:latest
+    command: ["nginx", "-g", "daemon off;"]
+    depends_on:
+      - app-backend
+    volumes:
+      - ./certs:/certs:ro
+      - ./configs/nginx/pq.conf:/opt/nginx/conf/nginx.conf:ro
+    ports:
+      - "8443:443"
+    networks:
+      - pqcnet
 
-  # nginx-pq:
-  #   image: openquantumsafe/nginx:latest
-  #   profiles: ["unsupported-pq"]
-  #   command: ["nginx", "-g", "daemon off;"]
-  #   depends_on:
-  #     - app-backend
-  #   volumes:
-  #     - ./certs:/certs:ro
-  #     - ./configs/nginx/pq.conf:/opt/nginx/conf/nginx.conf:ro
-  #   ports:
-  #     - "8443:443"
-  #   networks:
-  #     - pqcnet
+  capture-nginx-classic:
+    image: nicolaka/netshoot:latest
+    profiles: ["capture"]
+    depends_on:
+      - nginx-classic
+    network_mode: "service:nginx-classic"
+    command: ["tcpdump", "-i", "any", "-s", "0", "-w", "/captures/classic_nginx.pcap", "tcp", "port", "443"]
+    volumes:
+      - ./captures:/captures
+
+  capture-nginx-hybrid:
+    image: nicolaka/netshoot:latest
+    profiles: ["capture"]
+    depends_on:
+      - nginx-hybrid
+    network_mode: "service:nginx-hybrid"
+    command: ["tcpdump", "-i", "any", "-s", "0", "-w", "/captures/hybrid_nginx.pcap", "tcp", "port", "443"]
+    volumes:
+      - ./captures:/captures
+  
+  capture-nginx-pq:
+    image: nicolaka/netshoot:latest
+    profiles: ["capture"]
+    depends_on:
+      - nginx-pq
+    network_mode: "service:nginx-pq"
+    command: ["tcpdump", "-i", "any", "-s", "0", "-w", "/captures/pq_nginx.pcap", "tcp", "port", "443"]
+    volumes:
+      - ./captures:/captures
 
   app-backend:
     image: nginx:alpine

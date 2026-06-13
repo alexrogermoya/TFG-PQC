@@ -76,13 +76,13 @@ esac
 
 case "$ENVIRONMENT" in
   all)
-    TARGET_SERVICES="server-classic server-hybrid server-pq nginx-classic nginx-hybrid"
+    TARGET_SERVICES="server-classic server-hybrid server-pq nginx-classic nginx-hybrid nginx-pq"
     ;;
   lab)
     TARGET_SERVICES="server-classic server-hybrid server-pq"
     ;;
   nginx)
-    TARGET_SERVICES="nginx-classic nginx-hybrid"
+    TARGET_SERVICES="nginx-classic nginx-hybrid nginx-pq"
     ;;
   *)
     echo "Unknown environment: $ENVIRONMENT" >&2

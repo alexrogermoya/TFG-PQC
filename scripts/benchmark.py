@@ -45,6 +45,7 @@ SCENARIOS = {
     "nginx": (
         Scenario("nginx", "classic", "nginx-classic", "X25519"),
         Scenario("nginx", "hybrid", "nginx-hybrid", "X25519MLKEM768"),
+        Scenario("nginx", "pq", "nginx-pq", "mlkem768"),
     ),
 }
 
@@ -233,6 +234,12 @@ def main() -> None:
         default=None,
         help="deprecated; latency is now measured with duration-based s_time batches",
     )
+    parser.add_argument(
+        "--network",
+        choices=["local", "wan"],
+        default="local",
+        help="network environment: local is a clean network; wan is a simulation of a distributed network",
+    )
     parser.add_argument("--samples", type=int, default=5, help="s_time batches per scenario")
     parser.add_argument("--duration", type=int, default=5, help="seconds per s_time batch")
     parser.add_argument("--warmup", type=int, default=1, help="warmup seconds per scenario")
@@ -254,6 +261,11 @@ def main() -> None:
     )
 
     for scenario in selected_scenarios:
+        
+        if args.network == "wan" and scenario.environment == "lab":
+            print(f"[{scenario.environment}/{scenario.name}] Saltant prova en mode WAN (s_server no suporta packet loss)")
+            continue
+
         print(f"[{scenario.environment}/{scenario.name}] warmup: {args.warmup}s with s_time")
         if args.warmup > 0:
             run_s_time(scenario, duration=args.warmup)
@@ -269,6 +281,7 @@ def main() -> None:
             total_real_seconds += timing["real_seconds"]
             sample_rows.append(
                 {
+                    "network": args.network,
                     "environment": scenario.environment,
                     "scenario": scenario.name,
                     "configured_group": scenario.group,
@@ -286,6 +299,7 @@ def main() -> None:
         negotiated_group = parse_negotiated_group(traced_output)
         size_rows.append(
             {
+                "network": args.network,
                 "environment": scenario.environment,
                 "scenario": scenario.name,
                 "configured_group": scenario.group,
@@ -299,6 +313,7 @@ def main() -> None:
 
         summary = summarize(batch_means)
         row = {
+            "network": args.network,
             "environment": scenario.environment,
             "scenario": scenario.name,
             "configured_group": scenario.group,
@@ -315,13 +330,13 @@ def main() -> None:
             "min_batch_mean_ms": f"{summary['min_ms']:.6f}",
             "max_batch_mean_ms": f"{summary['max_ms']:.6f}",
             "overall_handshakes_per_second": f"{total_connections / total_real_seconds:.6f}",
-            "latency_method": "openssl_s_time_new_connections",
         }
         summary_rows.append(row)
 
     suffix = args.environment
 
     sample_fields = [
+        "network",
         "environment",
         "scenario",
         "configured_group",
@@ -333,6 +348,7 @@ def main() -> None:
         "handshakes_per_second",
     ]
     summary_fields = [
+        "network",
         "environment",
         "scenario",
         "configured_group",
@@ -349,9 +365,9 @@ def main() -> None:
         "min_batch_mean_ms",
         "max_batch_mean_ms",
         "overall_handshakes_per_second",
-        "latency_method",
     ]
     size_fields = [
+        "network",
         "environment",
         "scenario",
         "configured_group",
@@ -361,17 +377,23 @@ def main() -> None:
         "total_handshake_message_bytes",
         "message_breakdown_json",
     ]
+       
+    
+    if args.network == "wan":
+        write_csv(RESULTS_DIR / f"handshake_samples_{suffix}_wan.csv", sample_rows, sample_fields)
+        write_csv(RESULTS_DIR / f"handshake_summary_{suffix}_wan.csv", summary_rows, summary_fields)
+        write_csv(RESULTS_DIR / f"handshake_message_sizes_{suffix}_wan.csv", size_rows, size_fields)
+    else:
+        write_csv(RESULTS_DIR / f"handshake_samples_{suffix}_local.csv", sample_rows, sample_fields)
+        write_csv(RESULTS_DIR / f"handshake_summary_{suffix}_local.csv", summary_rows, summary_fields)
+        write_csv(RESULTS_DIR / f"handshake_message_sizes_{suffix}_local.csv", size_rows, size_fields)
 
-    write_csv(RESULTS_DIR / f"handshake_samples_{suffix}.csv", sample_rows, sample_fields)
-    write_csv(RESULTS_DIR / f"handshake_summary_{suffix}.csv", summary_rows, summary_fields)
-    write_csv(RESULTS_DIR / f"handshake_message_sizes_{suffix}.csv", size_rows, size_fields)
-
-    write_csv(RESULTS_DIR / "handshake_samples.csv", sample_rows, sample_fields)
-    write_csv(RESULTS_DIR / "handshake_summary.csv", summary_rows, summary_fields)
-    write_csv(RESULTS_DIR / "handshake_message_sizes.csv", size_rows, size_fields)
+    # write_csv(RESULTS_DIR / "handshake_samples.csv", sample_rows, sample_fields)
+    # write_csv(RESULTS_DIR / "handshake_summary.csv", summary_rows, summary_fields)
+    # write_csv(RESULTS_DIR / "handshake_message_sizes.csv", size_rows, size_fields)
 
     print(f"Results written to {RESULTS_DIR}")
-
+ 
 
 if __name__ == "__main__":
     main()
