@@ -1,7 +1,7 @@
 network,environment,scenario,configured_group,negotiated_group,client_to_server_bytes,server_to_client_bytes,total_handshake_message_bytes,message_breakdown_json
 local,lab,classic,X25519,X25519,381,1489,1870,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 329, ""EncryptedExtensions"": 6, ""Finished"": 104, ""NewSessionTicket"": 114, ""ServerHello"": 122}"
-local,lab,hybrid,X25519MLKEM768,X25519MLKEM768,1558,2463,4021,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 1506, ""EncryptedExtensions"": 6, ""Finished"": 104, ""ServerHello"": 1210}"
+local,lab,hybrid,X25519MLKEM768,X25519MLKEM768,1558,2577,4135,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 1506, ""EncryptedExtensions"": 6, ""Finished"": 104, ""NewSessionTicket"": 114, ""ServerHello"": 1210}"
 local,lab,pq,MLKEM768,MLKEM768,1522,2431,3953,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 1470, ""EncryptedExtensions"": 6, ""Finished"": 104, ""ServerHello"": 1178}"
-local,nginx,classic,X25519,X25519,380,1493,1873,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 328, ""EncryptedExtensions"": 10, ""Finished"": 104, ""NewSessionTicket"": 114, ""ServerHello"": 122}"
-local,nginx,hybrid,X25519MLKEM768,X25519MLKEM768,1557,2581,4138,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 1505, ""EncryptedExtensions"": 10, ""Finished"": 104, ""NewSessionTicket"": 114, ""ServerHello"": 1210}"
+local,nginx,classic,X25519,X25519,380,1379,1759,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 328, ""EncryptedExtensions"": 10, ""Finished"": 104, ""ServerHello"": 122}"
+local,nginx,hybrid,X25519MLKEM768,X25519MLKEM768,1557,2467,4024,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 1505, ""EncryptedExtensions"": 10, ""Finished"": 104, ""ServerHello"": 1210}"
 local,nginx,pq,mlkem768,MLKEM768,1521,2435,3956,"{""Certificate"": 931, ""CertificateVerify"": 264, ""ClientHello"": 1469, ""EncryptedExtensions"": 10, ""Finished"": 104, ""ServerHello"": 1178}"

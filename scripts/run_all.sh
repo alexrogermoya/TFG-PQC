@@ -40,7 +40,7 @@ run_scenario() {
 
     # 3. Executar benchmark
     echo "[+] Executant proves de rendiment amb Python..."
-    python3 scripts/benchmark.py --samples 5 --duration 20 --warmup 2 --network "$NETWORK_ARG"
+    python3 scripts/benchmark.py --samples 10 --duration 30 --warmup 2 --network "$NETWORK_ARG"
     # python3 scripts/benchmark.py --samples 1 --duration 2 --warmup 0 --network "$NETWORK_ARG"
 
     # 4. Tancar captures ordenadament per guardar els PCAP
@@ -64,6 +64,7 @@ run_scenario() {
     mv captures/hybrid.pcap captures/hybrid_${SCENARIO_NAME}.pcap 2>/dev/null || true
     mv captures/hybrid_nginx.pcap captures/hybrid_nginx_${SCENARIO_NAME}.pcap 2>/dev/null || true
     mv captures/pq.pcap captures/pq_${SCENARIO_NAME}.pcap 2>/dev/null || true
+    mv captures/pq_nginx.pcap captures/pq_nginx_${SCENARIO_NAME}.pcap 2>/dev/null || true
 
     # 7. Apagar contenidors
     echo "[+] Apagant l'entorn i netejant volums..."
