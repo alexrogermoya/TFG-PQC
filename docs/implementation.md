@@ -40,6 +40,7 @@ El fitxer `docker-compose.nginx.yml` afegeix:
 
 - `nginx-classic`: nginx amb `ssl_ecdh_curve X25519`.
 - `nginx-hybrid`: nginx amb `ssl_ecdh_curve X25519MLKEM768`.
+- `nginx-pq`: nginx amb `ssl_ecdh_curve mlkem768`.
 - `app-backend`: backend HTTP intern basat en `nginx:alpine`.
 
 Aquest entorn modela una arquitectura mes propera a produccio:
@@ -52,6 +53,7 @@ Nginx termina TLS al port 443 del contenidor i publica ports al host:
 
 - `8441`: `nginx-classic`
 - `8442`: `nginx-hybrid`
+- `8443`: `nginx-pq`
 
 El backend escolta HTTP intern al port 8080. Nginx hi fa `proxy_pass` i envia
 capçaleres habituals de reverse proxy:

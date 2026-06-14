@@ -12,6 +12,7 @@ perfils_wan = [
 
 etiquetes_x_wan = []
 mean_classic, mean_hybrid, mean_pq = [], [], []
+median_classic, median_hybrid, median_pq = [], [], []
 tp_classic, tp_hybrid, tp_pq = [], [], []
 p99_classic, p99_hybrid, p99_pq = [], [], []
 
@@ -28,6 +29,10 @@ for nom_arxiu, etiqueta in perfils_wan:
     mean_classic.append(nginx.loc["classic", "overall_mean_handshake_ms"])
     mean_hybrid.append(nginx.loc["hybrid", "overall_mean_handshake_ms"])
     mean_pq.append(nginx.loc["pq", "overall_mean_handshake_ms"])
+
+    median_classic.append(nginx.loc["classic", "median_batch_mean_ms"])
+    median_hybrid.append(nginx.loc["hybrid", "median_batch_mean_ms"])
+    median_pq.append(nginx.loc["pq", "median_batch_mean_ms"])
     
     tp_classic.append(nginx.loc["classic", "overall_handshakes_per_second"])
     tp_hybrid.append(nginx.loc["hybrid", "overall_handshakes_per_second"])
@@ -120,14 +125,20 @@ def crear_grafic_wan(dades_classic, dades_hybrid, dades_pq, titol, ylabel, arxiu
 
 # GRÀFIC 2: Temps (Mitjana)
 crear_grafic_wan(mean_classic, mean_hybrid, mean_pq, "Temps de handshake (Mitjana) - Entorn NGINX", 
-                 "Temps (ms)", "plot_main_nginx_time.png", "%.0f ms", leg_loc="upper left")
+                 "Temps (ms)", "plot_mean_nginx_time.png", "%.1f ms", leg_loc="upper left")
 
-# GRÀFIC 3: Throughput
+# GRÀFIC 3: Temps (Mediana)
+crear_grafic_wan(median_classic, median_hybrid, median_pq, "Temps de handshake (Mediana) - Entorn NGINX", 
+                 "Temps (ms)", "plot_median_nginx_time.png", "%.1f ms", leg_loc="upper left")
+
+# GRÀFIC 4: Throughput
 crear_grafic_wan(tp_classic, tp_hybrid, tp_pq, "Capacitat del servidor (Throughput) - Entorn NGINX", 
                  "Connexions/segon", "plot_main_nginx_throughput.png", "%.1f", leg_loc="upper right")
 
-# GRÀFIC 4: Tail Latency P99
+# GRÀFIC 5: Tail Latency P99
 crear_grafic_wan(p99_classic, p99_hybrid, p99_pq, "Tail Latency P99 - Entorn NGINX", 
-                 "Temps P99 (ms)", "plot_main_nginx_taillatency.png", "%.0f ms", leg_loc="upper left")
+                 "Temps P99 (ms)", "plot_main_nginx_taillatency.png", "%.1f ms", leg_loc="upper left")
+
+
 
 print("-> Generats els 5 gràfics WAN (amb PQ pur) a /results!")
